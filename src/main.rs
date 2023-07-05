@@ -1,9 +1,9 @@
 use async_openai::{
-    types::{CreateTranscriptionRequest,AudioInput, AudioResponseFormat},
-    Client
+    types::{AudioInput, AudioResponseFormat, CreateTranscriptionRequest},
+    Client,
 };
-use youtube_dl::YoutubeDl;
 use std::{fs::File, io::Write};
+use youtube_dl::YoutubeDl;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -25,16 +25,15 @@ async fn main() -> anyhow::Result<()> {
         .expect("ERROR: error getting video title")
         .title;
 
-
     let audio_path = AudioInput {
-        path: std::path::PathBuf::from(format!("./audio/{}.m4a", title))
+        path: std::path::PathBuf::from(format!("./audio/{title}.m4a")),
     };
 
     let request = CreateTranscriptionRequest {
         file: audio_path,
         model: "whisper-1".to_string(),
-        prompt: None, 
-        response_format: Some(AudioResponseFormat::Json), 
+        prompt: None,
+        response_format: Some(AudioResponseFormat::Json),
         temperature: None,
         language: Some("en".to_string()),
     };
@@ -47,9 +46,11 @@ async fn main() -> anyhow::Result<()> {
 
     let title: String = title
         .to_lowercase()
-        .chars().filter(|c| !c.is_whitespace()).collect();
+        .chars()
+        .filter(|c| !c.is_whitespace())
+        .collect();
 
-    let mut file = File::create(format!("./transcribed/{}.txt", title))
+    let mut file = File::create(format!("./transcribed/{title}.txt"))
         .expect("Error: file could not be created");
 
     file.write_all(response.text.as_bytes())
